@@ -24,6 +24,7 @@ import com.back.projeto.service.VagaService;
 
 @RestController
 @RequestMapping("/vagas")
+@Tag(name = "Vagas", description = "API para gerenciamento de vagas")
 public class VagasController {
     
     @Autowired
