@@ -42,7 +42,7 @@ public class VagaService {
         vagaExistente.setLocalizacao(vagaAtualizada.getLocalizacao());
         vagaExistente.setTipo_vaga(vagaAtualizada.getTipo_vaga());
         vagaExistente.setArea(vagaAtualizada.getArea());
-        vagaExistente.setNivel_experiencia(vagaAtualizada.getNivel_experiencia());
+        vagaExistente.setEmpresa(vagaAtualizada.getEmpresa());
         vagaExistente.setDescricao(vagaAtualizada.getDescricao());
         vagaExistente.setLink(vagaAtualizada.getLink());
         vagaExistente.setUpdate_at(LocalDateTime.now());

@@ -35,14 +35,22 @@ public class Vagas {
     @Column(name = "area", nullable = false)
     private String area;
 
-    @Column(name = "nivel_experiencia", nullable = false)
-    private String nivel_experiencia;
+    @Column(name = "empresa", nullable = false)
+    private String empresa;
 
     @Column(name = "descricao", columnDefinition = "TEXT", nullable = false)
     private String descricao;
 
     @Column(name = "link")
     private String link;
+
+    public String getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(String empresa) {
+        this.empresa = empresa;
+    }
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "create_at")
@@ -100,13 +108,7 @@ public class Vagas {
         this.area = area;
     }
 
-    public String getNivel_experiencia() {
-        return nivel_experiencia;
-    }
-
-    public void setNivel_experiencia(String nivel_experiencia) {
-        this.nivel_experiencia = nivel_experiencia;
-    }
+    
 
     public String getDescricao() {
         return descricao;
