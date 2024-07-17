@@ -20,25 +20,25 @@ public class Vagas {
     @Column(name = "id_vaga")
     private Long id;
 
-    @Column(name = "local_dado")
+    @Column(name = "local_dado", nullable = false)
     private String local_dado;
 
-    @Column(name = "nome_vaga")
+    @Column(name = "nome_vaga", nullable = false)
     private String nome_vaga;
 
-    @Column(name = "localizacao")
+    @Column(name = "localizacao", nullable = false)
     private String localizacao;
 
-    @Column(name = "tipo_vaga")
+    @Column(name = "tipo_vaga", nullable = false)
     private String tipo_vaga;
 
-    @Column(name = "area")
+    @Column(name = "area", nullable = false)
     private String area;
 
-    @Column(name = "nivel_experiencia")
+    @Column(name = "nivel_experiencia", nullable = false)
     private String nivel_experiencia;
 
-    @Column(name = "descricao", columnDefinition = "TEXT")
+    @Column(name = "descricao", columnDefinition = "TEXT", nullable = false)
     private String descricao;
 
     @Column(name = "link")

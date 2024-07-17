@@ -32,7 +32,7 @@ public class Usuario {
     @Column(name = "tipo_usuario", nullable = false)
     private String tipo_usuario;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique=true)
     private String email;
 
     @Column(name = "senha")
