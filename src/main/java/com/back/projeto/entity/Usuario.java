@@ -20,19 +20,19 @@ public class Usuario {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "cpf")
+    @Column(name = "cpf", nullable = false, unique=true)
     private String cpf;
 
-    @Column(name = "ra_matricula")
+    @Column(name = "ra_matricula", nullable = false, unique=true)
     private String ra_matricula;
 
     @Column(name = "nome")
     private String nome;
 
-    @Column(name = "tipo_usuario")
+    @Column(name = "tipo_usuario", nullable = false)
     private String tipo_usuario;
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "senha")
