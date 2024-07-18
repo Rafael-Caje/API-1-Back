@@ -2,6 +2,9 @@ package com.back.projeto.entity;
 
 import java.time.LocalDateTime;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Column;
@@ -94,8 +97,9 @@ public class Usuario {
         return senha;
     }
 
-    public void setSenha(String senha) {
-        this.senha = senha;
+     public void setSenha(String senha) {
+        PasswordEncoder encoder = new BCryptPasswordEncoder();
+        this.senha = encoder.encode(senha);
     }
 
     public LocalDateTime getUpdate_at() {
