@@ -4,6 +4,10 @@ public class Login {
 
     private String ra_matricula;
     private String email;
+    private String senha;
+    private String autorizacoes;
+    private String token;
+
     public String getRa_matricula() {
         return ra_matricula;
     }
@@ -11,16 +15,6 @@ public class Login {
     public void setRa_matricula(String ra_matricula) {
         this.ra_matricula = ra_matricula;
     }
-
-    private String senha;
-    private String autorizacoes;
-    private String token;
-
-    public Login() {
-        // Construtor padrão
-    }
-
-    // Getters e Setters
 
     public String getEmail() {
         return email;

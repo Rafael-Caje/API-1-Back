@@ -23,8 +23,8 @@ public class JwtUtils {
     public static String generateToken(Authentication authentication) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         Login login = new Login();
-        login.setEmail(authentication.getName());
-
+        login.setRa_matricula(authentication.getName());
+        login.setEmail(authentication.getName());  // Corrigido para incluir o e-mail
         if (!authentication.getAuthorities().isEmpty()) {
             login.setAutorizacoes(authentication.getAuthorities().iterator().next().getAuthority());
         }
@@ -41,23 +41,23 @@ public class JwtUtils {
                 .setExpiration(new Date(agora.getTime() + hora))
                 .signWith(Keys.hmacShaKeyFor(KEY.getBytes()), SignatureAlgorithm.HS256).compact();
     }
-    
+
     public static Authentication parseToken(String token)
         throws IOException, JsonProcessingException {
-    ObjectMapper mapper = new ObjectMapper();
-    String credentialsJson = Jwts.parserBuilder()
-            .setSigningKey(Keys.hmacShaKeyFor(KEY.getBytes())).build()
-            .parseClaimsJws(token).getBody().get("userDetails", String.class);
-    Login usuario = mapper.readValue(credentialsJson, Login.class);
+        ObjectMapper mapper = new ObjectMapper();
+        String credentialsJson = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(KEY.getBytes())).build()
+                .parseClaimsJws(token).getBody().get("userDetails", String.class);
+        Login usuario = mapper.readValue(credentialsJson, Login.class);
 
-    // Converte a lista de autorizações para um array de String
-    String[] authoritiesArray = { usuario.getAutorizacoes() };
+        // Converte a lista de autorizações para um array de String
+        String[] authoritiesArray = { usuario.getAutorizacoes() };
 
-    UserDetails userDetails = User.builder().username(usuario.getRa_matricula()).password("secret")
-            .authorities(authoritiesArray).build();
+        UserDetails userDetails = User.builder()
+                .username(usuario.getRa_matricula())
+                .password("secret")
+                .authorities(authoritiesArray).build();
 
-    return new UsernamePasswordAuthenticationToken(usuario.getRa_matricula(), usuario.getSenha(),
-            userDetails.getAuthorities());
-}
-
+        return new UsernamePasswordAuthenticationToken(usuario.getRa_matricula(), null, userDetails.getAuthorities());
+    }
 }
