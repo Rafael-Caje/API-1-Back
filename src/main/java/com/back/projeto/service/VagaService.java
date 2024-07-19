@@ -25,7 +25,7 @@ public class VagaService {
     }
 
     public List<Vagas> buscarTodasVagas() {
-        return vagasRepo.findAll();
+        return vagasRepo.findAllOrderByCreate_atDesc();
     }
 
     public Vagas buscarVagaPorId(Long id) {
