@@ -29,7 +29,7 @@ public class Usuario {
     @Column(name = "ra_matricula", nullable = false, unique=true)
     private String ra_matricula;
 
-    @Column(name = "nome")
+    @Column(name = "nome",nullable = true)
     private String nome;
 
     @Column(name = "tipo_usuario", nullable = false)
@@ -38,7 +38,7 @@ public class Usuario {
     @Column(name = "email", nullable = false, unique=true)
     private String email;
 
-    @Column(name = "senha")
+    @Column(name = "senha",nullable = true)
     private String senha;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
