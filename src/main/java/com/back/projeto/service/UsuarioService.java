@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import com.back.projeto.entity.Usuario;
@@ -40,6 +41,7 @@ public class UsuarioService {
         return usuarioRepo.save(usuario);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public List<Usuario> buscarTodosUsuarios() {
         return usuarioRepo.findAll();
     }

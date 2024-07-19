@@ -41,7 +41,7 @@ public class Vagas {
     @Column(name = "descricao", columnDefinition = "TEXT", nullable = false)
     private String descricao;
 
-    @Column(name = "link")
+    @Column(name = "link", columnDefinition = "TEXT", nullable = false)
     private String link;
 
     public String getEmpresa() {
