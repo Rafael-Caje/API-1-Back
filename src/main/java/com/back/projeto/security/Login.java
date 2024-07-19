@@ -2,11 +2,20 @@ package com.back.projeto.security;
 
 public class Login {
 
+    private Long id;
     private String ra_matricula;
     private String email;
     private String senha;
     private String autorizacoes;
     private String token;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getRa_matricula() {
         return ra_matricula;

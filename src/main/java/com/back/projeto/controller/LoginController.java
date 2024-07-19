@@ -42,6 +42,7 @@ public class LoginController {
 
         // Cria um objeto Login para retorno
         Login respostaLogin = new Login();
+        respostaLogin.setId(usuarioAutenticado.getId());
         respostaLogin.setRa_matricula(usuarioAutenticado.getRa_matricula());
         respostaLogin.setEmail(usuarioAutenticado.getEmail());
         respostaLogin.setAutorizacoes(usuarioAutenticado.getTipo_usuario());
