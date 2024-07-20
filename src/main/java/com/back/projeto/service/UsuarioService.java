@@ -40,18 +40,27 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepo;
 
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     private Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+
+    public Optional<Usuario> buscarUsuarioPorId(Long id) {
+        return usuarioRepo.findById(id);
+    }
+
+    public List<Usuario> buscarUsuariosPorNome(String nome) {
+        return usuarioRepo.findByNomeContaining(nome);
+    }
+
 
     public Usuario criarUsuario(Usuario usuario) {
         if (usuario == null ||
                 usuario.getCpf() == null || usuario.getCpf().isBlank() ||
                 usuario.getRa_matricula() == null || usuario.getRa_matricula().isBlank() ||
                 usuario.getTipo_usuario() == null || usuario.getTipo_usuario().isBlank() ||
-                usuario.getEmail() == null || usuario.getEmail().isBlank() ||
-                usuario.getSenha() == null || usuario.getSenha().isBlank()) {
+                usuario.getEmail() == null || usuario.getEmail().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados invalidos");
         }
         return usuarioRepo.save(usuario);

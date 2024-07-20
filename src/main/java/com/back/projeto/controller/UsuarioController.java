@@ -2,8 +2,11 @@ package com.back.projeto.controller;
 
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import com.back.projeto.dto.PrimeiroAcessoDTO;
 import com.back.projeto.dto.SenhaTokenDTO;
+
 import com.back.projeto.dto.UsuarioPerfilDTO;
 import com.back.projeto.entity.Usuario;
 import com.back.projeto.service.UsuarioService;
@@ -39,6 +43,16 @@ public class UsuarioController {
         return new ResponseEntity<>(novoUsuario, HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Buscar todos os usuários por nome", description = "Retorna uma lista de todos os usuários cadastrados por nome")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de usuários retornada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro ao buscar os usuários")
+    })
+    @PostMapping("/buscar-por-nome")
+    public List<Usuario> buscarUsuariosPorNome(@RequestParam String nome) {
+        return service.buscarUsuariosPorNome(nome);
+    }
+
     @Operation(summary = "Buscar todos os usuários", description = "Retorna uma lista de todos os usuários cadastrados")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de usuários retornada com sucesso"),
@@ -48,6 +62,22 @@ public class UsuarioController {
     public ResponseEntity<List<Usuario>> buscarTodosUsuarios() {
         List<Usuario> usuarios = service.buscarTodosUsuarios();
         return new ResponseEntity<>(usuarios, HttpStatus.OK);
+    }
+
+
+    @Operation(summary = "Buscar apenas um usuário", description = "Retorna um usuário cadastrado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de usuários retornada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro ao buscar os usuários")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable Long id) {
+        Optional<Usuario> usuario = service.buscarUsuarioPorId(id);
+        if (usuario.isPresent()) {
+            return new ResponseEntity<>(usuario.get(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @Operation(summary = "Atualizar um usuário existente", description = "Atualiza um usuário existente pelo seu ID")
