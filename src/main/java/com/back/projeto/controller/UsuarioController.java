@@ -1,6 +1,7 @@
 package com.back.projeto.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,6 +49,22 @@ public class UsuarioController {
     public ResponseEntity<List<Usuario>> buscarTodosUsuarios() {
         List<Usuario> usuarios = service.buscarTodosUsuarios();
         return new ResponseEntity<>(usuarios, HttpStatus.OK);
+    }
+
+
+    @Operation(summary = "Buscar apenas um usuário", description = "Retorna um usuário cadastrado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de usuários retornada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro ao buscar os usuários")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable Long id) {
+        Optional<Usuario> usuario = service.buscarUsuarioPorId(id);
+        if (usuario.isPresent()) {
+            return new ResponseEntity<>(usuario.get(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @Operation(summary = "Atualizar um usuário existente", description = "Atualiza um usuário existente pelo seu ID")

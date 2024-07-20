@@ -31,6 +31,10 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepo;
 
+    public Optional<Usuario> buscarUsuarioPorId(Long id) {
+        return usuarioRepo.findById(id);
+    }
+
     public Usuario criarUsuario(Usuario usuario) {
         if (usuario == null ||
                 usuario.getCpf() == null || usuario.getCpf().isBlank() ||
