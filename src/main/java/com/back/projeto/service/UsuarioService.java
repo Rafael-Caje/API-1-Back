@@ -9,27 +9,41 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Date;
+import java.security.Key;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.back.projeto.dto.UsuarioPerfilDTO;
 import com.back.projeto.entity.Usuario;
 import com.back.projeto.repository.UsuarioRepository;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+
 import org.springframework.web.multipart.MultipartFile;
-
-
 
 @Service
 public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepo;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    private Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     public Usuario criarUsuario(Usuario usuario) {
         if (usuario == null ||
@@ -165,6 +179,68 @@ public class UsuarioService {
         dto.setUpdate_at(usuario.getUpdate_at());
         return dto;
     }
+
+    public String generateToken(Usuario usuario) {
+        return Jwts.builder()
+                .setSubject(usuario.getRa_matricula())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day expiration
+                .signWith(key)
+                .compact();
+    }
+
+public ResponseEntity<String> verificarPrimeiroAcesso(String ra_matricula, String cpf) {
+    if (ra_matricula == null || ra_matricula.isBlank() || cpf == null || cpf.isBlank()) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("RA/Matrícula e CPF são obrigatórios.");
+    }
+
+    Optional<Usuario> usuarioOptional = usuarioRepo.findByRa_matriculaAndCpf(ra_matricula, cpf);
+    if (usuarioOptional.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Ra ou CPF incorreto.");
+    }
+
+    Usuario usuario = usuarioOptional.get();
+
+    if (!passwordEncoder.matches(cpf, usuario.getSenha())) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário ja realizou o primeiro acesso");
+    }
+    String token = generateToken(usuario);
+    return ResponseEntity.ok("Primeiro acesso validado. Token gerado: " + token);
 }
 
 
+public ResponseEntity<String> primeiraSenha(String token, String novaSenha) {
+    if (token == null || token.isBlank()) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token é obrigatório.");
+    }
+
+    if (novaSenha == null || novaSenha.isBlank() || novaSenha.length() < 8) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nova senha é obrigatória e deve ter pelo menos 8 caracteres.");
+    }
+
+    Claims claims;
+    try {
+        claims = Jwts.parserBuilder()
+            .setSigningKey(key)
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
+    } catch (JwtException e) {
+        String errorMessage = "Token inválido";
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+    }
+
+    String raMatricula = claims.getSubject();
+    Optional<Usuario> usuarioOptional = usuarioRepo.findByRa_matricula(raMatricula);
+    if (usuarioOptional.isEmpty()) {
+        String errorMessage = "Usuário não encontrado para RA/Matrícula: " + raMatricula;
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+    }
+
+    Usuario usuario = usuarioOptional.get();
+    usuario.setSenha(passwordEncoder.encode(novaSenha));
+    usuarioRepo.save(usuario);
+
+    return ResponseEntity.ok("Senha alterada com sucesso.");
+}
+    
+}

@@ -1,5 +1,6 @@
 package com.back.projeto.controller;
 
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,13 +9,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.Authentication;
-
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import com.back.projeto.dto.PrimeiroAcessoDTO;
+import com.back.projeto.dto.SenhaTokenDTO;
 import com.back.projeto.dto.UsuarioPerfilDTO;
 import com.back.projeto.entity.Usuario;
 import com.back.projeto.service.UsuarioService;
@@ -90,4 +90,31 @@ public class UsuarioController {
         Usuario usuario = service.buscarUsuarioPorRaMatricula(raMatricula);
         return service.converterParaUsuarioPerfilDTO(usuario);
     }
+
+    @Operation(summary = "Primeiro acesso", description = "Primeiro acesso de usuarios")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Primeiro acesso bem sucedido "),
+            @ApiResponse(responseCode = "400", description = "Erro no primeiro acesso")
+    })
+
+    @PostMapping("/primeiro-acesso")
+    public ResponseEntity<String> verificarPrimeiroAcesso(@RequestBody PrimeiroAcessoDTO request) {
+        return service.verificarPrimeiroAcesso(request.getRa_matricula(), request.getCpf());
+    }
+
+
+    @Operation(summary = "Primeira senha", description = "Criacao de senha")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Senha criada com suceso "),
+            @ApiResponse(responseCode = "400", description = "Erro ao criar a senha")
+    })
+
+    @PostMapping("/senha-token")
+    public ResponseEntity<String> primeiraSenha(@RequestBody SenhaTokenDTO request) {
+        return service.primeiraSenha(request.getToken(), request.getNovaSenha());
+    }
+
+
+
+
 }
