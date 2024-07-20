@@ -7,12 +7,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.core.Authentication;
+
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import com.back.projeto.dto.UsuarioPerfilDTO;
 import com.back.projeto.entity.Usuario;
 import com.back.projeto.service.UsuarioService;
 
@@ -79,5 +82,12 @@ public class UsuarioController {
     public ResponseEntity<Void> uploadCSV(@RequestParam("file") MultipartFile file) {
         service.cadastrarUsuariosViaCSV(file);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/profile")
+    public UsuarioPerfilDTO getPerfilUsuario(Authentication authentication) {
+        String raMatricula = authentication.getName();
+        Usuario usuario = service.buscarUsuarioPorRaMatricula(raMatricula);
+        return service.converterParaUsuarioPerfilDTO(usuario);
     }
 }

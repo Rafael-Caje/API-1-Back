@@ -15,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import com.back.projeto.dto.UsuarioPerfilDTO;
 import com.back.projeto.entity.Usuario;
 import com.back.projeto.repository.UsuarioRepository;
 import org.apache.commons.csv.CSVFormat;
@@ -143,4 +145,26 @@ public class UsuarioService {
         }
     }
 
+    public Usuario buscarUsuarioPorRaMatricula(String ra_matricula) {
+        Optional<Usuario> usuarioOptional = usuarioRepo.findByRa_matricula(ra_matricula);
+        if (usuarioOptional.isPresent()) {
+            return usuarioOptional.get();
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado");
+        }
+    }
+
+    public UsuarioPerfilDTO converterParaUsuarioPerfilDTO(Usuario usuario) {
+        UsuarioPerfilDTO dto = new UsuarioPerfilDTO();
+        dto.setId(usuario.getId());
+        dto.setCpf(usuario.getCpf());
+        dto.setRa_matricula(usuario.getRa_matricula());
+        dto.setNome(usuario.getNome());
+        dto.setTipo_usuario(usuario.getTipo_usuario());
+        dto.setEmail(usuario.getEmail());
+        dto.setUpdate_at(usuario.getUpdate_at());
+        return dto;
+    }
 }
+
+

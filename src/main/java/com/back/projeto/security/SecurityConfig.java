@@ -28,9 +28,11 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .addFilterBefore(new JwtAuthenticationFilter(),
                         UsernamePasswordAuthenticationFilter.class)
-                // this disables session creation on Spring Security
                 .sessionManagement(
-                        sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                        sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/user/profile").authenticated()
+                        .anyRequest().permitAll());
         return http.build();
     }
 
