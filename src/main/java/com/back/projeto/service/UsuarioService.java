@@ -63,6 +63,11 @@ public class UsuarioService {
                 usuario.getEmail() == null || usuario.getEmail().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados invalidos");
         }
+        usuario.setUpdate_at(LocalDateTime.now());
+        String senha = usuario.getCpf();
+        usuario.setSenha(senha);
+
+
         return usuarioRepo.save(usuario);
     }
 
@@ -246,10 +251,11 @@ public ResponseEntity<String> primeiraSenha(String token, String novaSenha) {
     }
 
     Usuario usuario = usuarioOptional.get();
-    usuario.setSenha(passwordEncoder.encode(novaSenha));
+    usuario.setSenha(novaSenha); // Sem criptografia
     usuarioRepo.save(usuario);
 
     return ResponseEntity.ok("Senha alterada com sucesso.");
 }
+
     
 }
