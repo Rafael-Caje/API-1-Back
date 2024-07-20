@@ -17,6 +17,7 @@ import com.back.projeto.entity.Usuario;
 import com.back.projeto.service.UsuarioService;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/user")
 @Tag(name = "Usuario", description = "API para gerenciamento de usuários")
 public class UsuarioController {
