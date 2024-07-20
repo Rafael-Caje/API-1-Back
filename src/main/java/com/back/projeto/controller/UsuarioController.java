@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 
 import com.back.projeto.dto.UsuarioPerfilDTO;
 import com.back.projeto.entity.Usuario;
@@ -38,6 +41,16 @@ public class UsuarioController {
     public ResponseEntity<Usuario> criarUsuario(@RequestBody Usuario usuario) {
         Usuario novoUsuario = service.criarUsuario(usuario);
         return new ResponseEntity<>(novoUsuario, HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Buscar todos os usuários por nome", description = "Retorna uma lista de todos os usuários cadastrados por nome")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de usuários retornada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro ao buscar os usuários")
+    })
+    @PostMapping("/buscar-por-nome")
+    public List<Usuario> buscarUsuariosPorNome(@RequestParam String nome) {
+        return service.buscarUsuariosPorNome(nome);
     }
 
     @Operation(summary = "Buscar todos os usuários", description = "Retorna uma lista de todos os usuários cadastrados")

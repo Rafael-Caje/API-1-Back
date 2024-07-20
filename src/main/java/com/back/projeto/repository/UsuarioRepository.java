@@ -1,5 +1,6 @@
 package com.back.projeto.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +16,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
      @Query("SELECT u FROM Usuario u WHERE u.ra_matricula = :ra_matricula")
     Optional<Usuario> findByRa_matricula(@Param("ra_matricula") String ra_matricula);
+
+    @Query("SELECT u FROM Usuario u WHERE u.nome LIKE %:nome%")
+    List<Usuario> findByNomeContaining(@Param("nome") String nome);
 }
