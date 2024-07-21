@@ -127,7 +127,7 @@ public class UsuarioController {
     })
 
     @PostMapping("/primeiro-acesso")
-    public ResponseEntity<String> verificarPrimeiroAcesso(@RequestBody PrimeiroAcessoDTO request) {
+    public ResponseEntity<Map<String, String>> verificarPrimeiroAcesso(@RequestBody PrimeiroAcessoDTO request) {
         return service.verificarPrimeiroAcesso(request.getRa_matricula(), request.getCpf());
     }
 

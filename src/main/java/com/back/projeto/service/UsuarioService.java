@@ -208,23 +208,33 @@ public class UsuarioService {
                 .compact();
     }
 
-    public ResponseEntity<String> verificarPrimeiroAcesso(String ra_matricula, String cpf) {
+    public ResponseEntity<Map<String, String>> verificarPrimeiroAcesso(String ra_matricula, String cpf) {
         if (ra_matricula == null || ra_matricula.isBlank() || cpf == null || cpf.isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("RA/Matrícula e CPF são obrigatórios.");
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "RA/Matrícula e CPF são obrigatórios.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
-
+    
         Optional<Usuario> usuarioOptional = usuarioRepo.findByRa_matriculaAndCpf(ra_matricula, cpf);
         if (usuarioOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Ra ou CPF incorreto.");
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Ra ou CPF incorreto.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
-
+    
         Usuario usuario = usuarioOptional.get();
-
+    
         if (!passwordEncoder.matches(cpf, usuario.getSenha())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário ja realizou o primeiro acesso");
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Usuário ja realizou o primeiro acesso");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
+    
         String token = generateToken(usuario);
-        return ResponseEntity.ok("Primeiro acesso validado. Token gerado: " + token);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Primeiro acesso validado.");
+        response.put("token", token);
+        return ResponseEntity.ok(response);
     }
 
     public ResponseEntity<String> primeiraSenha(String token, String novaSenha) {
