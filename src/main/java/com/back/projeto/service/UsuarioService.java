@@ -69,10 +69,12 @@ public class UsuarioService {
         return usuarioRepo.save(usuario);
     }
 
+   
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public List<Usuario> buscarTodosUsuarios() {
-        return usuarioRepo.findAll();
+        return usuarioRepo.findAllOrderByNomeAsc();
     }
+    
 
     public Usuario atualizarUsuario(Long id, Usuario usuarioAtualizado) {
         Optional<Usuario> usuarioOptional = usuarioRepo.findById(id);
