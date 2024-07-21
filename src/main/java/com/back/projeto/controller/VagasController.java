@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -96,5 +97,11 @@ public class VagasController {
     @GetMapping("/admin")
     public List<Vagas> listarVagasCriadasPorAdmins() {
         return service.listarVagasCriadasPorAdmins();
+    }
+
+     @GetMapping("/buscar")
+    public ResponseEntity<List<Vagas>> buscarVagasPorNome(@RequestParam String nomeVaga) {
+        List<Vagas> vagas = service.buscarVagasPorNome(nomeVaga);
+        return new ResponseEntity<>(vagas, HttpStatus.OK);
     }
 }

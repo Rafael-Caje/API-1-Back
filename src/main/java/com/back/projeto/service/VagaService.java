@@ -42,6 +42,11 @@ public class VagaService {
         return vagasRepo.findAllOrderByCreate_atDesc();
     }
 
+
+    public List<Vagas> buscarVagasPorNome(String nomeVaga) {
+        return vagasRepo.findByNomeVagaContainingIgnoreCaseOrderByNomeVagaAsc(nomeVaga);
+    }
+
     public Vagas buscarVagaPorId(Long id) {
         return vagasRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaga não encontrada"));

@@ -25,4 +25,7 @@ public interface VagasRepository extends JpaRepository <Vagas, Long> {
 
     @Query("SELECT v FROM Vagas v WHERE v.usuario.tipo_usuario = :tipoUsuario")
     List<Vagas> findByUsuarioTipoUsuario(@Param("tipoUsuario") String tipoUsuario);
+
+    @Query("SELECT v FROM Vagas v WHERE LOWER(v.nome_vaga) LIKE LOWER(CONCAT('%', :nomeVaga, '%')) ORDER BY v.nome_vaga ASC")
+    List<Vagas> findByNomeVagaContainingIgnoreCaseOrderByNomeVagaAsc(@Param("nomeVaga") String nomeVaga);
 }
