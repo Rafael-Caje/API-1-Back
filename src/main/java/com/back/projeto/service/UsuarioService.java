@@ -54,14 +54,17 @@ public class UsuarioService {
 
     private Map<String, VerificationCode> verificationCodes = new ConcurrentHashMap<>();
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public Optional<Usuario> buscarUsuarioPorId(Long id) {
         return usuarioRepo.findById(id);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public List<Usuario> buscarUsuariosPorNome(String nome) {
         return usuarioRepo.findByNomeContainingIgnoreCase(nome);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public Usuario criarUsuario(Usuario usuario) {
         if (usuario == null ||
                 usuario.getCpf() == null || usuario.getCpf().isBlank() ||
@@ -82,6 +85,7 @@ public class UsuarioService {
         return usuarioRepo.findAllOrderByNomeAsc();
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public Usuario atualizarUsuario(Long id, Usuario usuarioAtualizado) {
         Optional<Usuario> usuarioOptional = usuarioRepo.findById(id);
         if (usuarioOptional.isEmpty()) {
@@ -113,6 +117,7 @@ public class UsuarioService {
         return usuarioRepo.save(usuarioExistente);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public void excluirUsuario(Long id) {
         if (!usuarioRepo.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado");
@@ -120,6 +125,7 @@ public class UsuarioService {
         usuarioRepo.deleteById(id);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public void cadastrarUsuariosViaCSV(MultipartFile file) {
         System.out.println("Iniciando o processamento do arquivo CSV.");
         try (InputStream is = file.getInputStream();
@@ -179,6 +185,7 @@ public class UsuarioService {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public Usuario buscarUsuarioPorRaMatricula(String ra_matricula) {
         Optional<Usuario> usuarioOptional = usuarioRepo.findByRa_matricula(ra_matricula);
         if (usuarioOptional.isPresent()) {
@@ -188,6 +195,7 @@ public class UsuarioService {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public UsuarioPerfilDTO converterParaUsuarioPerfilDTO(Usuario usuario) {
         UsuarioPerfilDTO dto = new UsuarioPerfilDTO();
         dto.setId(usuario.getId());

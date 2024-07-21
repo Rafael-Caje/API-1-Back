@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,6 +22,7 @@ public class VagaService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public Vagas criarVaga(Vagas vaga) {
         if (vaga.getUsuario() != null) {
             Usuario usuario = usuarioRepository.findById(vaga.getUsuario().getId())
@@ -33,25 +35,29 @@ public class VagaService {
         return vagasRepo.save(vaga);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public List<Vagas> listarVagasCriadasPorAdmins() {
         return vagasRepo.findByUsuarioTipoUsuario("ROLE_ADMIN");
     }
 
-    
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public List<Vagas> buscarTodasVagas() {
         return vagasRepo.findAllOrderByCreate_atDesc();
     }
 
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public List<Vagas> buscarVagasPorNome(String nomeVaga) {
         return vagasRepo.findByNomeVagaContainingIgnoreCaseOrderByNomeVagaAsc(nomeVaga);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
     public Vagas buscarVagaPorId(Long id) {
         return vagasRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaga não encontrada"));
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public Vagas atualizarVaga(Long id, Vagas vagaAtualizada) {
         Vagas vagaExistente = vagasRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaga não encontrada"));
@@ -69,6 +75,7 @@ public class VagaService {
         return vagasRepo.save(vagaExistente);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public void excluirVaga(Long id) {
         if (!vagasRepo.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vaga não encontrada");
