@@ -3,6 +3,7 @@ package com.back.projeto.controller;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Query;
@@ -144,7 +145,81 @@ public class UsuarioController {
         return service.primeiraSenha(request.getToken(), request.getNovaSenha());
     }
 
+    @Operation(summary = "Enviar codigo de verificação no E-mail", description = "Envio de codigo de verificação no e-mail")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "E-mail enviado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro ao enviar o e-mail")
+    })
+    @PostMapping("/enviar-codigo-verificacao")
+    public ResponseEntity<?> enviarCodigoVerificacaoPorEmail(@RequestBody Map<String, String> requestBody) {
+        String email = requestBody.get("email");
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body("O email não foi fornecido no corpo da solicitação.");
+        }
 
+        try {
+            service.enviarCodigoVerificacaoPorEmail(email);
+            return ResponseEntity.ok("Código de verificação enviado com sucesso.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao enviar código de verificação: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Validação de codigo enviado ao e-mail", description = "Validação do codigo enviado ao e-mail")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Codigo Validado com Sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro ao validar o codigo")
+    })
+    @PostMapping("/verificar-codigo-verificacao")
+    public ResponseEntity<?> verificarCodigoVerificacao(@RequestBody Map<String, String> requestBody) {
+        String email = requestBody.get("email");
+        String codigo = requestBody.get("codigo");
+
+        if (email == null || email.isEmpty() || codigo == null || codigo.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("O email e o código de verificação devem ser fornecidos no corpo da solicitação.");
+        }
+
+        try {
+            boolean codigoValido = service.verificarCodigoVerificacao(email, codigo);
+            if (codigoValido) {
+                return ResponseEntity.ok("Código de verificação válido.");
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Código de verificação inválido.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao verificar código de verificação: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Alteração de Senha", description = "Alteração de Senha")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Senha Alterada com Sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro ao Alterar a Senha")
+    })
+    @PutMapping("/alterar-senha")
+    public ResponseEntity<?> alterarSenha(@RequestBody Map<String, String> requestBody) {
+        String email = requestBody.get("email");
+        String codigo = requestBody.get("codigo");
+        String novaSenha = requestBody.get("novaSenha");
+
+        if (email == null || email.isEmpty() || codigo == null || codigo.isEmpty() || novaSenha == null
+                || novaSenha.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("O email, código de verificação e nova senha devem ser fornecidos no corpo da solicitação.");
+        }
+
+        try {
+            service.alterarSenha(email, codigo, novaSenha);
+            return ResponseEntity.ok("Senha alterada com sucesso.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao alterar senha: " + e.getMessage());
+        }
+    }
 
 
 }

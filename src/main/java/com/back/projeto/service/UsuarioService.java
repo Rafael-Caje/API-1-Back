@@ -1,8 +1,12 @@
 package com.back.projeto.service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,15 +44,20 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepo;
 
-
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     private Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
+    @Autowired
+    private EmailService emailService;
+
+    private Map<String, VerificationCode> verificationCodes = new ConcurrentHashMap<>();
+
     public Optional<Usuario> buscarUsuarioPorId(Long id) {
         return usuarioRepo.findById(id);
     }
+
     public List<Usuario> buscarUsuariosPorNome(String nome) {
         return usuarioRepo.findByNomeContainingIgnoreCase(nome);
     }
@@ -65,16 +74,13 @@ public class UsuarioService {
         String senha = usuario.getCpf();
         usuario.setSenha(senha);
 
-
         return usuarioRepo.save(usuario);
     }
 
-   
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public List<Usuario> buscarTodosUsuarios() {
         return usuarioRepo.findAllOrderByNomeAsc();
     }
-    
 
     public Usuario atualizarUsuario(Long id, Usuario usuarioAtualizado) {
         Optional<Usuario> usuarioOptional = usuarioRepo.findById(id);
@@ -202,60 +208,129 @@ public class UsuarioService {
                 .compact();
     }
 
-public ResponseEntity<String> verificarPrimeiroAcesso(String ra_matricula, String cpf) {
-    if (ra_matricula == null || ra_matricula.isBlank() || cpf == null || cpf.isBlank()) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("RA/Matrícula e CPF são obrigatórios.");
+    public ResponseEntity<String> verificarPrimeiroAcesso(String ra_matricula, String cpf) {
+        if (ra_matricula == null || ra_matricula.isBlank() || cpf == null || cpf.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("RA/Matrícula e CPF são obrigatórios.");
+        }
+
+        Optional<Usuario> usuarioOptional = usuarioRepo.findByRa_matriculaAndCpf(ra_matricula, cpf);
+        if (usuarioOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Ra ou CPF incorreto.");
+        }
+
+        Usuario usuario = usuarioOptional.get();
+
+        if (!passwordEncoder.matches(cpf, usuario.getSenha())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário ja realizou o primeiro acesso");
+        }
+        String token = generateToken(usuario);
+        return ResponseEntity.ok("Primeiro acesso validado. Token gerado: " + token);
     }
 
-    Optional<Usuario> usuarioOptional = usuarioRepo.findByRa_matriculaAndCpf(ra_matricula, cpf);
-    if (usuarioOptional.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Ra ou CPF incorreto.");
+    public ResponseEntity<String> primeiraSenha(String token, String novaSenha) {
+        if (token == null || token.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token é obrigatório.");
+        }
+
+        if (novaSenha == null || novaSenha.isBlank() || novaSenha.length() < 8) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Nova senha é obrigatória e deve ter pelo menos 8 caracteres.");
+        }
+
+        Claims claims;
+        try {
+            claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (JwtException e) {
+            String errorMessage = "Token inválido";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+        }
+
+        String raMatricula = claims.getSubject();
+        Optional<Usuario> usuarioOptional = usuarioRepo.findByRa_matricula(raMatricula);
+        if (usuarioOptional.isEmpty()) {
+            String errorMessage = "Usuário não encontrado para RA/Matrícula: " + raMatricula;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        }
+
+        Usuario usuario = usuarioOptional.get();
+        usuario.setSenha(novaSenha); // Sem criptografia
+        usuarioRepo.save(usuario);
+
+        return ResponseEntity.ok("Senha alterada com sucesso.");
     }
 
-    Usuario usuario = usuarioOptional.get();
+    public void enviarCodigoVerificacaoPorEmail(String email) {
 
-    if (!passwordEncoder.matches(cpf, usuario.getSenha())) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário ja realizou o primeiro acesso");
-    }
-    String token = generateToken(usuario);
-    return ResponseEntity.ok("Primeiro acesso validado. Token gerado: " + token);
-}
+        Optional<Usuario> optionalUsuario = usuarioRepo.findByEmail(email);
+        if (optionalUsuario.isPresent()) {
+            String codigoVerificacao = gerarCodigoVerificacao();
 
-
-public ResponseEntity<String> primeiraSenha(String token, String novaSenha) {
-    if (token == null || token.isBlank()) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token é obrigatório.");
-    }
-
-    if (novaSenha == null || novaSenha.isBlank() || novaSenha.length() < 8) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nova senha é obrigatória e deve ter pelo menos 8 caracteres.");
-    }
-
-    Claims claims;
-    try {
-        claims = Jwts.parserBuilder()
-            .setSigningKey(key)
-            .build()
-            .parseClaimsJws(token)
-            .getBody();
-    } catch (JwtException e) {
-        String errorMessage = "Token inválido";
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+            verificationCodes.put(email, new VerificationCode(codigoVerificacao, Instant.now()));
+            try {
+                emailService.enviarEmail(email, "template_ri2kons", "35Ylun5ncXdGbClGT",
+                        "{\"email\":\"" + email + "\", \"codigoVerificacao\":\"" + codigoVerificacao + "\"}");
+            } catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Erro ao enviar email: " + e.getMessage());
+            }
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado");
+        }
     }
 
-    String raMatricula = claims.getSubject();
-    Optional<Usuario> usuarioOptional = usuarioRepo.findByRa_matricula(raMatricula);
-    if (usuarioOptional.isEmpty()) {
-        String errorMessage = "Usuário não encontrado para RA/Matrícula: " + raMatricula;
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+    private static class VerificationCode {
+        private String code;
+        private Instant createdAt;
+
+        public VerificationCode(String code, Instant createdAt) {
+            this.code = code;
+            this.createdAt = createdAt;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public Instant getCreatedAt() {
+            return createdAt;
+        }
     }
 
-    Usuario usuario = usuarioOptional.get();
-    usuario.setSenha(novaSenha); // Sem criptografia
-    usuarioRepo.save(usuario);
+    public boolean verificarCodigoVerificacao(String email, String codigo) {
+        VerificationCode verificationCode = verificationCodes.get(email);
+        if (verificationCode != null && verificationCode.getCode().equals(codigo)) {
 
-    return ResponseEntity.ok("Senha alterada com sucesso.");
-}
+            return Duration.between(verificationCode.getCreatedAt(), Instant.now()).toMinutes() <= 5;
+        }
+        return false;
+    }
 
-    
+    public void alterarSenha(String email, String codigo, String novaSenha) {
+
+        if (verificarCodigoVerificacao(email, codigo)) {
+            Optional<Usuario> optionalUsuario = usuarioRepo.findByEmail(email);
+            if (optionalUsuario.isPresent()) {
+                Usuario usuario = optionalUsuario.get();
+                usuario.setSenha(novaSenha);
+                usuarioRepo.save(usuario);
+
+                verificationCodes.remove(email);
+            } else {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado");
+            }
+        } else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Código de verificação inválido ou expirado");
+        }
+    }
+
+    private String gerarCodigoVerificacao() {
+        Random random = new Random();
+        int codigo = 100000 + random.nextInt(900000);
+        return String.valueOf(codigo);
+    }
+
 }
