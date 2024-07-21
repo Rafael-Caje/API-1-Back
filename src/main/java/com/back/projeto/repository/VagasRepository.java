@@ -20,4 +20,9 @@ public interface VagasRepository extends JpaRepository <Vagas, Long> {
 
     @Query("SELECT v FROM Vagas v ORDER BY v.create_at DESC")
     List<Vagas> findAllOrderByCreate_atDesc();
+
+    List<Vagas> findByUsuarioId(Long usuarioId);
+
+    @Query("SELECT v FROM Vagas v WHERE v.usuario.tipo_usuario = :tipoUsuario")
+    List<Vagas> findByUsuarioTipoUsuario(@Param("tipoUsuario") String tipoUsuario);
 }

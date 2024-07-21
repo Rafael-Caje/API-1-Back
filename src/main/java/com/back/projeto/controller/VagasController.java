@@ -86,4 +86,15 @@ public class VagasController {
         service.excluirVaga(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @Operation(summary = "Buscar vagas por admin", description = "Retorna as vagas por admin")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Vagas retornadas com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Vagas não encontradas")
+    })
+
+    @GetMapping("/admin")
+    public List<Vagas> listarVagasCriadasPorAdmins() {
+        return service.listarVagasCriadasPorAdmins();
+    }
 }

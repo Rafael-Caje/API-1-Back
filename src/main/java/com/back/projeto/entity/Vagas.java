@@ -9,6 +9,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -43,6 +45,10 @@ public class Vagas {
 
     @Column(name = "link", columnDefinition = "TEXT", nullable = false)
     private String link;
+
+    @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable = true)
+    private Usuario usuario;
 
     public String getEmpresa() {
         return empresa;
@@ -141,5 +147,13 @@ public class Vagas {
     public void setUpdate_at(LocalDateTime update_at) {
         this.update_at = update_at;
     }
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
 
 }

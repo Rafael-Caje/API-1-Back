@@ -7,7 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.back.projeto.entity.Usuario;
 import com.back.projeto.entity.Vagas;
+import com.back.projeto.repository.UsuarioRepository;
 import com.back.projeto.repository.VagasRepository;
 
 @Service
@@ -16,12 +18,26 @@ public class VagaService {
     @Autowired 
     private VagasRepository vagasRepo;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     public Vagas criarVaga(Vagas vaga) {
+        if (vaga.getUsuario() != null) {
+            Usuario usuario = usuarioRepository.findById(vaga.getUsuario().getId())
+                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+            vaga.setUsuario(usuario);
+        }
+
         vaga.setCreate_at(LocalDateTime.now());
         vaga.setUpdate_at(LocalDateTime.now());
         return vagasRepo.save(vaga);
     }
 
+    public List<Vagas> listarVagasCriadasPorAdmins() {
+        return vagasRepo.findByUsuarioTipoUsuario("ROLE_ADMIN");
+    }
+
+    
     public List<Vagas> buscarTodasVagas() {
         return vagasRepo.findAllOrderByCreate_atDesc();
     }
