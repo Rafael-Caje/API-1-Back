@@ -343,4 +343,33 @@ public class UsuarioService {
         return String.valueOf(codigo);
     }
 
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
+    public ResponseEntity<String> alterarSenhaLogado(String ra_matricula, String senhaAntiga, String novaSenha) {
+        Optional<Usuario> usuarioOptional = usuarioRepo.findByRa_matricula(ra_matricula);
+
+        if (usuarioOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
+        }
+
+        Usuario usuario = usuarioOptional.get();
+
+        if (!passwordEncoder.matches(senhaAntiga, usuario.getSenha())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Senha antiga incorreta");
+        }
+
+        if (novaSenha == null || novaSenha.isBlank() || novaSenha.length() < 8) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Nova senha deve ter pelo menos 8 caracteres.");
+        }
+
+        usuario.setSenha(novaSenha);
+        usuarioRepo.save(usuario);
+
+        return ResponseEntity.ok("Senha alterada com sucesso.");
+    }
 }
+
+
+
+

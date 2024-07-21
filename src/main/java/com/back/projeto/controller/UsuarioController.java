@@ -1,6 +1,5 @@
 package com.back.projeto.controller;
 
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
@@ -15,6 +14,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import com.back.projeto.dto.AlterarSenhaDTO;
 import com.back.projeto.dto.PrimeiroAcessoDTO;
 import com.back.projeto.dto.SenhaTokenDTO;
 
@@ -62,7 +63,6 @@ public class UsuarioController {
         List<Usuario> usuarios = service.buscarTodosUsuarios();
         return new ResponseEntity<>(usuarios, HttpStatus.OK);
     }
-
 
     @Operation(summary = "Buscar apenas um usuário", description = "Retorna um usuário cadastrado")
     @ApiResponses(value = {
@@ -130,7 +130,6 @@ public class UsuarioController {
     public ResponseEntity<Map<String, String>> verificarPrimeiroAcesso(@RequestBody PrimeiroAcessoDTO request) {
         return service.verificarPrimeiroAcesso(request.getRa_matricula(), request.getCpf());
     }
-
 
     @Operation(summary = "Primeira senha", description = "Criacao de senha")
     @ApiResponses(value = {
@@ -219,5 +218,16 @@ public class UsuarioController {
         }
     }
 
+    @Operation(summary = "Alterar senha com validação de senha antiga", description = "Permite a alteração da senha de um usuário com validação da senha antiga")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Senha alterada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro ao alterar a senha"),
+            @ApiResponse(responseCode = "401", description = "Senha antiga incorreta"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    })
+    @PutMapping("/alterar-senha-logado")
+    public ResponseEntity<String> alterarSenhaLogado(@RequestBody AlterarSenhaDTO request) {
+        return service.alterarSenhaLogado(request.getRa_matricula(), request.getSenhaAntiga(), request.getNovaSenha());
+    }
 
 }
