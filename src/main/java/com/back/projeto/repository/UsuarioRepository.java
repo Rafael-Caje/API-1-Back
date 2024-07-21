@@ -20,7 +20,14 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     @Query("SELECT u FROM Usuario u WHERE u.ra_matricula = :ra_matricula")
     Optional<Usuario> findByRa_matricula(@Param("ra_matricula") String ra_matricula);
     
-    @Query("SELECT u FROM Usuario u WHERE u.nome LIKE %:nome%")
-    List<Usuario> findByNomeContaining(@Param("nome") String nome);
+     @Query("SELECT u FROM Usuario u " +
+           "WHERE LOWER(u.nome) LIKE LOWER(CONCAT(:nome, '%')) " +
+           "OR LOWER(u.nome) LIKE LOWER(CONCAT('%', :nome, '%')) " +
+           "ORDER BY CASE " +
+           "           WHEN LOWER(u.nome) LIKE LOWER(CONCAT(:nome, '%')) THEN 1 " +
+           "           ELSE 2 " +
+           "         END, u.nome")
+    List<Usuario> findByNomeContainingIgnoreCase(@Param("nome") String nome);
+
 
 }

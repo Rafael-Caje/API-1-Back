@@ -49,11 +49,9 @@ public class UsuarioService {
     public Optional<Usuario> buscarUsuarioPorId(Long id) {
         return usuarioRepo.findById(id);
     }
-
     public List<Usuario> buscarUsuariosPorNome(String nome) {
-        return usuarioRepo.findByNomeContaining(nome);
+        return usuarioRepo.findByNomeContainingIgnoreCase(nome);
     }
-
 
     public Usuario criarUsuario(Usuario usuario) {
         if (usuario == null ||
