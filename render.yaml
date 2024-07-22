@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: scraping-service
+    env: docker
+    plan: free
+    buildCommand: docker build -t scraping-service .
+    startCommand: docker run scraping-service
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: SUPABASE_URL
+        value: ${SUPABASE_URL}
+      - key: SUPABASE_KEY
+        value: ${SUPABASE_KEY}
